@@ -128,7 +128,11 @@ While Unity permits this, it is not a scalable practice for several reasons:
 - With everything as children of one Canvas the hierarchy becomes difficult to navigate and reason about as content grows.
 - There is no **additive scene loading strategy**. Background, HUD, and overlay systems should ideally be independent scenes loaded additively, enabling content streaming and team parallelism.
 
-The `NoSafeArea` / `SafeArea` sibling pattern for separating background from content is valid, but relies on a verbatim copy of a community-authored script (see §3.6).
+The `NoSafeArea` / `SafeArea` sibling pattern for separating background from content is valid, but relies on a verbatim copy of a community-authored script (see §3.7).
+
+**`LevelCompletedScreen` reuses the same Canvas prefab as `HomeScreen`.** Both scenes share an identical root prefab that bundles Canvas, CanvasScaler, `NoSafeArea/Background`, and `SafeArea/Content` into a single asset. This creates silent cross-scene coupling: any structural change to the prefab (CanvasScaler settings, render order, added components) propagates to both scenes simultaneously. It also means `LevelCompletedScreen` cannot have a different Canvas configuration — split into multiple Canvases, different sort order, different scaler settings — without breaking the shared prefab or creating a diverging variant.
+
+The correct approach is for the Canvas prefab to contain **only** the Canvas + CanvasScaler configuration. Screen-specific structure (`NoSafeArea`, `SafeArea`, content nodes) should either live directly in the scene or as a Prefab Variant, keeping scenes independently configurable.
 
 ---
 
