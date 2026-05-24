@@ -6,6 +6,9 @@ using UnityEngine.UI;
 
     public class ButtonFooterController : MonoBehaviour
     {
+        private static readonly int Selected = Animator.StringToHash("Selected");
+        private static readonly int Locked = Animator.StringToHash("Locked");
+
         [Header("Components")]
         [SerializeField] private Animator animator;
         [SerializeField] private Button footerBtn;
@@ -31,22 +34,20 @@ using UnityEngine.UI;
             });
         }
 
-        public void SetLock(
-            bool locked)
+        public void SetLock(bool locked)
         {
             _locked = locked;
 
             footerBtn.interactable = _locked == false;
 
-            animator.SetBool("Locked", _locked);
+            animator.SetBool(Locked, _locked);
         }
 
-        public void SetSelect(
-            bool selected)
+        public void SetSelect(bool selected)
         {
             _selected = selected;
 
-            animator.SetBool("Selected", _selected);
+            animator.SetBool(Selected, _selected);
         }
     }
 

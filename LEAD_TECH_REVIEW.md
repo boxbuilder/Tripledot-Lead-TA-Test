@@ -191,6 +191,20 @@ The brief specifies:
 
 This script does not exist. The delivered `MenuFooterController.cs` handles selection state internally but exposes neither of the required events. Any system that needs to react to footer navigation (content panel manager, analytics, tutorial system) has no contract to bind to.
 
+#### Applied Fix — Renamed to `BottomBarView`, events added, polish pass
+
+The delivered `MenuFooterController.cs` was renamed (file + class + `.meta` preserved so the prefab reference survives) to `BottomBarView.cs` to match the brief's contract. Two `UnityEvent`s were exposed:
+
+- `ContentActivated : UnityEvent<ButtonFooterController>` — fires when a footer button is toggled on, passing the activated button so listeners can route to the correct content panel.
+- `Closed : UnityEvent` — fires when the currently-selected button is toggled off and no content is active.
+
+Behavioural polish added alongside the rename:
+
+- **Snap on first selection** — when no button was previously selected (e.g. on `Start()` with `startSelected` set, or after a deselect), the indicator is placed immediately on the new button instead of sliding from its previous position. Slide is preserved when switching between two already-active selections.
+- **Accordion expansion** — selecting a button reallocates horizontal space via `LayoutElement.flexibleWidth` (driven by the existing `HorizontalLayoutGroup`), animated in lockstep with the indicator. The selected cell grows, the others compress proportionally — a subtle "fisarmonica" effect.
+- **Missing `UnselectedTransition` animation state added** — the original `ButtonFooter` Animator had no state covering the return from `Selected` to default, so a deselected button stayed visually stuck in the selected pose. The transition state was authored and wired in the controller.
+- **Extended clickable area** — the button's hit-box was expanded beyond the sprite border via an invisible raycast target, so the user no longer has to land precisely on the icon. Important for thumb-reach ergonomics on mobile and matches the in-house feel of the reference gif.
+
 ### 2.6 Animation Polish
 
 The footer entrance/exit animations and the Level Completed screen animations are present and structurally reasonable. The sine-wave text animation on the Level Completed title is a creative addition — however its implementation has critical performance problems detailed in §3.1 and §5.
@@ -228,7 +242,7 @@ See §5 for the full before/after refactor.
 
 ---
 
-### 3.2 `MenuFooterController.cs` — World-space DOTween on a UI element
+### 3.2 `MenuFooterController.cs` (now `BottomBarView.cs`) — World-space DOTween on a UI element
 
 ```csharp
 // BUG — DOMoveX operates in world space
@@ -305,6 +319,8 @@ private async void MoveIndicator()
 | **Easing** | `Ease.OutSine` (DOTween) | `Mathf.SmoothStep` — built-in equivalent |
 | **Namespace** | global | `Tripledot.HomeScreen` |
 | **External dependency** | DOTween (~10 MB) | none |
+
+The script was subsequently renamed to `BottomBarView` and given the `ContentActivated` / `Closed` events plus snap-on-first-selection + accordion polish — see §2.5.
 
 ---
 
@@ -571,7 +587,7 @@ public class SineWaveTextAnimation : MonoBehaviour
 | Priority | Issue | Category |
 |---|---|---|
 | **P0** | Repository ships ~1 GB of generated files; Windows extraction fails with path-too-long error | Submission / Delivery |
-| **P0** | `BottomBarView.cs` entirely absent — contracted API not delivered | Specification |
+| ~~**P0**~~ ✅ | ~~`BottomBarView.cs` entirely absent — contracted API not delivered~~ **Fixed** — `MenuFooterController.cs` renamed to `BottomBarView.cs`, `ContentActivated` / `Closed` events added, plus snap/accordion polish, missing `UnselectedTransition` Animator state, and extended click area (see §2.5) | Specification |
 | **P0** | Settings Popup: no extensible base popup architecture, no blur/overlay system | Specification |
 | **P1** | Background image distorts on non-reference-resolution devices | UI / Visual |
 | **P1** | Single Canvas for all UI — no batching isolation | Architecture / Performance |

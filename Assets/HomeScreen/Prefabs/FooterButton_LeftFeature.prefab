@@ -10,11 +10,19 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 259760877011743574, guid: 473f2094f421e394aa54eaf9f2147e92, type: 3}
       propertyPath: m_Name
-      value: FooterButton_LeftFeature Variant
+      value: FooterButton_LeftFeature
       objectReference: {fileID: 0}
     - target: {fileID: 520565577050239058, guid: 473f2094f421e394aa54eaf9f2147e92, type: 3}
       propertyPath: m_text
       value: Left Feature
+      objectReference: {fileID: 0}
+    - target: {fileID: 520565577050239058, guid: 473f2094f421e394aa54eaf9f2147e92, type: 3}
+      propertyPath: m_fontSize
+      value: 36.05
+      objectReference: {fileID: 0}
+    - target: {fileID: 520565577050239058, guid: 473f2094f421e394aa54eaf9f2147e92, type: 3}
+      propertyPath: m_fontStyle
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 740803242058425239, guid: 473f2094f421e394aa54eaf9f2147e92, type: 3}
       propertyPath: m_Type
@@ -110,6 +118,22 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7541925579803300659, guid: 473f2094f421e394aa54eaf9f2147e92, type: 3}
       propertyPath: lockOnAwake
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7693785437442816844, guid: 473f2094f421e394aa54eaf9f2147e92, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1.22
+      objectReference: {fileID: 0}
+    - target: {fileID: 7693785437442816844, guid: 473f2094f421e394aa54eaf9f2147e92, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1.22
+      objectReference: {fileID: 0}
+    - target: {fileID: 7693785437442816844, guid: 473f2094f421e394aa54eaf9f2147e92, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1.22
+      objectReference: {fileID: 0}
+    - target: {fileID: 7693785437442816844, guid: 473f2094f421e394aa54eaf9f2147e92, type: 3}
+      propertyPath: m_ConstrainProportionsScale
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8622340842172760177, guid: 473f2094f421e394aa54eaf9f2147e92, type: 3}
