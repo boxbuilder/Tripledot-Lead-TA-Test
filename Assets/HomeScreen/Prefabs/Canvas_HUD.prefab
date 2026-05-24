@@ -472,6 +472,30 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 3577924152630622250}
     m_Modifications:
+    - target: {fileID: 1382740332850057933, guid: f87f734a32f0ed34a954cdaacc91a065, type: 3}
+      propertyPath: m_MinWidth
+      value: 40
+      objectReference: {fileID: 0}
+    - target: {fileID: 1382740332850057933, guid: f87f734a32f0ed34a954cdaacc91a065, type: 3}
+      propertyPath: m_PreferredWidth
+      value: 120
+      objectReference: {fileID: 0}
+    - target: {fileID: 1483764457603089828, guid: f87f734a32f0ed34a954cdaacc91a065, type: 3}
+      propertyPath: m_MinWidth
+      value: 40
+      objectReference: {fileID: 0}
+    - target: {fileID: 1483764457603089828, guid: f87f734a32f0ed34a954cdaacc91a065, type: 3}
+      propertyPath: m_PreferredWidth
+      value: 120
+      objectReference: {fileID: 0}
+    - target: {fileID: 3450755200453175569, guid: f87f734a32f0ed34a954cdaacc91a065, type: 3}
+      propertyPath: m_MinWidth
+      value: 40
+      objectReference: {fileID: 0}
+    - target: {fileID: 3450755200453175569, guid: f87f734a32f0ed34a954cdaacc91a065, type: 3}
+      propertyPath: m_PreferredWidth
+      value: 120
+      objectReference: {fileID: 0}
     - target: {fileID: 3802303639822036409, guid: f87f734a32f0ed34a954cdaacc91a065, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -552,9 +576,29 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3974467316228657462, guid: f87f734a32f0ed34a954cdaacc91a065, type: 3}
+      propertyPath: m_MinWidth
+      value: 40
+      objectReference: {fileID: 0}
+    - target: {fileID: 3974467316228657462, guid: f87f734a32f0ed34a954cdaacc91a065, type: 3}
+      propertyPath: m_PreferredWidth
+      value: 120
+      objectReference: {fileID: 0}
     - target: {fileID: 4083354729211081956, guid: f87f734a32f0ed34a954cdaacc91a065, type: 3}
       propertyPath: m_Name
       value: MenuFooter
+      objectReference: {fileID: 0}
+    - target: {fileID: 4302560191837027000, guid: f87f734a32f0ed34a954cdaacc91a065, type: 3}
+      propertyPath: m_MinWidth
+      value: 40
+      objectReference: {fileID: 0}
+    - target: {fileID: 4302560191837027000, guid: f87f734a32f0ed34a954cdaacc91a065, type: 3}
+      propertyPath: m_PreferredWidth
+      value: 120
+      objectReference: {fileID: 0}
+    - target: {fileID: 4353331201513594452, guid: f87f734a32f0ed34a954cdaacc91a065, type: 3}
+      propertyPath: indicatorMoveDuration
+      value: 0.1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
