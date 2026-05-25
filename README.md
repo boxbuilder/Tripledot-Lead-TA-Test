@@ -14,17 +14,20 @@ Many of the issues I found (shader problems, text rendering, incorrect UI config
 
 ## Overall Assessment
 
-Read along the three axes the brief calls out — high-level critique, UI & design system, code & architecture. Specifics live in [`LEAD_TECH_REVIEW.md`](./LEAD_TECH_REVIEW.md) and in the per-screen sections that follow.
+I’ve structured the review around the three areas mentioned in the brief: high-level critique, UI and design system, and code and architecture.
+You’ll find the detailed notes in [`LEAD_TECH_REVIEW.md`](./LEAD_TECH_REVIEW.md), along with more specific comments in each screen section below.
 
-**Project hygiene & structure.** Below the bar expected for a mid-level submission. The repository ships material that should never be committed, packages were never trimmed from Unity defaults, naming conventions drift within the same feature, and the codebase carries no namespace declarations. The folder layout signals an intent toward modularity that never lands on a convention. The project runs, but it is not something another engineer can drop into without a cleanup pass first.
+**Project hygiene & structure.** Below the bar expected for a mid-level submission. The repository ships material that should never be committed, packages were never trimmed from Unity defaults, and naming conventions drift within the same feature. The folder layout signals an intent toward modularity that never lands on a convention. The project runs, but it is not something another developer can drop into without a cleanup pass first.
 
-**UI & Design System.** The screens are recognisable from the PSD/GIF references but consistently stop at "it lays out" rather than "it matches." Several items from the brief are absent rather than imperfect — base popup architecture, blur/overlay, localisation infrastructure, Bottom Bar event contract. Responsiveness depends on a verbatim community script, animation polish is uneven, and some state machines are incomplete or in tension with the documented behaviour. The pattern is of a candidate solving "make it appear on screen" and then moving on.
+**UI & Design System.** The screens are recognisable from the PSD/GIF references, but they stop at “laid out” rather than “matching.” Several brief requirements are missing outright: base popup architecture, blur/overlay handling, localisation infrastructure, and others. Responsiveness follows the sketch-level intent but relies on a "Unity Forum" script. Animation polish is uneven, and some state machines are incomplete or conflict with the documented behaviour. Overall, the candidate appears to focus on getting things visible, then moves on before completing them properly.
 
-**Code & Architecture.** The C# is readable and functionally correct on the happy path, but reads more like adapted forum patterns than production practice. The recurring tells — magic-string identifiers, `const` parameters that should be Inspector-driven, listeners added without removal, unguarded edge cases, an external dependency carried for a single use — are individually minor and cumulatively diagnostic. Class responsibilities are blurred across view, animation, and selection logic in several places.
+**Code & Architecture.** The C# is readable and works on the happy path, but feels closer to adapted forum patterns than production code. The recurring issues: magic-string identifiers, hardcoded values that should be Inspector-driven, listeners added without cleanup, unguarded edge cases, and a dependency used only once are small in isolation, but tell together. In several places, view, animation, and selection responsibilities are also blurred.
 
 Cumulatively, this places the submission **at the junior–mid boundary**: a candidate who can deliver a working feature on the target device, but who has not yet absorbed the rigour, code-review discipline, and performance-aware instincts that a mid-level production role assumes.
 
 ---
+
+# Visual Analysis
 
 ## Bottom Bar
 
@@ -60,13 +63,13 @@ The new `SafeArea` is a 14-line replacement that reads `Screen.safeArea` once in
 
 ## Settings Popup
 
-The original is missing several elements from the brief: no scalable popup architecture, no blur, no localisation readiness. It also has graphical glitches: the background clips under the notch and the image spills past the screen edges.
+The original is missing several elements from the brief: no scalable pop-up architecture, no blur, and no localisation readiness. It also has graphical glitches: the background clips under the notch and the image spills past the screen edges.
 
 **Before**
 
 <img width="370" height="751" alt="PopupOpenBefore" src="https://github.com/user-attachments/assets/4f69d6cd-8317-48de-a0cb-2a909ad1bff7" />
 
-The new popup is built on an extensible base and includes a mobile-friendly blur effect, the same technique currently used in Scrabble GO and Monopoly GO. Localisation infrastructure is not covered in this test.
+The new pop-up is built on an extensible base and includes a mobile-friendly blur effect, the same technique currently used in Scrabble GO and Monopoly GO. Localisation infrastructure is not covered in this test.
 
 **After**
 
@@ -78,6 +81,7 @@ The new popup is built on an extensible base and includes a mobile-friendly blur
 
 The delivered screen falls short of the brief's target of "impressive animation and creative flair" on several counts:
 
+- On an artistic level, the scene is poor and sketchy; there was certainly no focus on creating a game feel and juicy animations.
 - The scene transition uses synchronous `LoadScene` with no preloading, causing a visible freeze that cuts off the opening animation
 - The Shader Graph effects (`GlowRays`, `ShinyStar`) add measurable GPU overhead without meaningful visual return; the same results could be achieved with a small rasterised texture or a lightweight particle system
 - All elements appear simultaneously with no reveal sequence
@@ -110,4 +114,5 @@ The original diverges significantly from the PSD reference: no bevel, no drop sh
 
 **After:** style matched to PSD; glint and sparkle VFX not yet implemented
 
-<img width="811" alt="Screenshot 2026-05-25 180058" src="https://github.com/user-attachments/assets/ae3ead76-5246-4fc9-81c2-767e50e80ed1" />
+<img width="811" alt="Screenshot 2026-05-25 180058" src="https://github.com/user-attachments/assets/d9f22859-9776-4d9f-b589-42950591c134" />
+
