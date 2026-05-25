@@ -183,7 +183,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2117372353034714439, guid: 3b2091fe77679764aa106b96d8bd615e, type: 3}
       propertyPath: m_text
-      value: +500
+      value: +300
       objectReference: {fileID: 0}
     - target: {fileID: 2117372353034714439, guid: 3b2091fe77679764aa106b96d8bd615e, type: 3}
       propertyPath: m_fontSize
@@ -287,7 +287,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7731454932312706253, guid: 3b2091fe77679764aa106b96d8bd615e, type: 3}
       propertyPath: m_Name
-      value: WatchVideoButton Variant
+      value: WatchVideoButton
       objectReference: {fileID: 0}
     - target: {fileID: 7945802790015969150, guid: 3b2091fe77679764aa106b96d8bd615e, type: 3}
       propertyPath: m_SizeDelta.x

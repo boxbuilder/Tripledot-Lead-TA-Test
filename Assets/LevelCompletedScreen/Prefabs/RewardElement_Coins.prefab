@@ -10,7 +10,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2502458146934017350, guid: 064dcbe6423188441bf54f374a0d0abd, type: 3}
       propertyPath: m_Name
-      value: RewardElement_Coins Variant
+      value: RewardElement_Coins
       objectReference: {fileID: 0}
     - target: {fileID: 4046485512237339287, guid: 064dcbe6423188441bf54f374a0d0abd, type: 3}
       propertyPath: m_Pivot.x
@@ -91,6 +91,12 @@ PrefabInstance:
     - target: {fileID: 4046485512237339287, guid: 064dcbe6423188441bf54f374a0d0abd, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4505140427848032031, guid: 064dcbe6423188441bf54f374a0d0abd, type: 3}
+      propertyPath: m_text
+      value: '100
+
+'
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

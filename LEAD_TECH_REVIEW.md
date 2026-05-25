@@ -12,7 +12,7 @@
 3. [UI & Design System Review](#2-ui--design-system-review)
 4. [Code & Architecture Audit](#3-code--architecture-audit)
 5. [Performance](#4-performance)
-6. [Deep-Dive Refactor — `SineWaveTextAnimation.cs`](#5-deep-dive-refactor--sinewavtextanimationcs)
+6. [Deep-Dive Analysis — `SineWaveTextAnimation.cs` → replaced by `TMP_CurvedText`](#5-deep-dive-analysis--sinewavtextanimationcs--replaced-by-tmp_curvedtext)
 7. [Visual & Artistic Polish](#6-visual--artistic-polish)
 8. [Priority Matrix](#priority-matrix)
 
@@ -96,7 +96,7 @@ Assets/
  ├── LevelCompletedScreen/
  │    ├── Animations/   — MainReward animation clips and controller
  │    ├── Prefabs/      — reward elements, title, buttons
- │    ├── Scripts/      — SineWaveTextAnimation
+ │    ├── Scripts/      — TMP_CurvedText
  │    └── Sprites/      — screen-specific sprites
  ├── Scenes/
  ├── RenderPipeline/    — UniversalRP.asset, Renderer2D.asset, GlobalSettings, VolumeProfile
@@ -213,7 +213,7 @@ The footer entrance/exit animations and the Level Completed screen animations ar
 
 ## 3. Code & Architecture Audit
 
-### 3.1 `SineWaveTextAnimation.cs` — Critical performance issue
+### 3.1 `SineWaveTextAnimation.cs` — Critical performance issue ✅ Replaced by `TMP_CurvedText`
 
 ```csharp
 // DELIVERED — problematic
@@ -238,7 +238,9 @@ void Update()
 - All three animation parameters are `const` — no artist can adjust them from the Inspector or override them per Prefab
 - The correct pattern uses `TMP_TextInfo` to write directly into TMP's owned vertex buffers and then calls `UpdateGeometry()` — zero allocation, no full mesh re-upload, handles invisible characters correctly
 
-See §5 for the full before/after refactor.
+See §5 for the full before/after analysis.
+
+**Applied Resolution:** `SineWaveTextAnimation.cs` was removed entirely and replaced with `TMP_CurvedText`, a more advanced and performant text animation component. All three issues (per-frame allocation, full mesh re-upload, non-configurable parameters) are resolved at source.
 
 ---
 
@@ -469,17 +471,19 @@ namespace Tripledot.Shared
 | Demo and template assets in build-eligible paths | Inflates build size, pollutes asset DB | `Assets/Settings/` (URP2DSceneTemplate), `TextMesh Pro/` (TMP demos) — DOTween fully removed ✅ |
 | Unused packages in `manifest.json` (`visualscripting`, `timeline`, `multiplayer.center`) | Medium — extra compilation targets, slower domain reload on every script change | `Packages/manifest.json` ✅ removed |
 | Single Canvas for all UI | Full re-batch on any UI state change | `HomeScreen.unity` hierarchy |
-| `ForceMeshUpdate()` + `mesh.vertices` every frame | High — 60 heap allocs/sec, full GPU upload per frame | `SineWaveTextAnimation.cs` |
+| `ForceMeshUpdate()` + `mesh.vertices` every frame | ✅ **Fixed** — `SineWaveTextAnimation.cs` removed, replaced with `TMP_CurvedText` (see §3.1, §5) | `LevelCompletedScreen` |
 | `Refresh()` polling in `Update()` | ✅ **Fixed** — portrait-only app, safe area read once in `Awake()`, `Update()` removed, 247 lines → 14 | `SafeArea.cs` (see §3.7) |
 | Synchronous `SceneManager.LoadScene` | ✅ **Fixed** — `LoadSceneAsync` + fade overlay + input block, `Time.unscaledDeltaTime` | `NavigationController.cs` (see §3.3) |
-| Background image distorts on non-reference devices | Visual defect on all non-matching aspect ratios | `HomeScreen.unity` — `Background` |
+| Background image distorts on non-reference devices | ✅ **Fixed** — `AspectRatioFitter` (Envelope Parent) + Square POT + ASTC compression | `HomeScreen.unity` — `Background` (see §2.1, §6) |
 | `DOMoveX` world-space on Canvas element | ✅ **Fixed** — replaced with `anchoredPosition` + `Awaitable`, DOTween (~10 MB) removed | `MenuFooterController.cs` (see §3.2) |
 
 ---
 
-## 5. Deep-Dive Refactor — `SineWaveTextAnimation.cs`
+## 5. Deep-Dive Analysis — `SineWaveTextAnimation.cs` → replaced by `TMP_CurvedText`
 
-Selected because it combines a **critical per-frame performance issue** with a direct **artist-facing configurability problem**, and the fix demonstrates clear knowledge of TMP's intended geometry API.
+Selected because it combines a **critical per-frame performance issue** with a direct **artist-facing configurability problem**, and the analysis demonstrates clear knowledge of TMP's intended geometry API.
+
+> **Final resolution:** the script was removed entirely and replaced with `TMP_CurvedText`, a more advanced component that solves all three problems at source. The before/after refactor below documents what a correct in-place fix would have looked like.
 
 ### Before
 
@@ -591,7 +595,7 @@ public class SineWaveTextAnimation : MonoBehaviour
 
 ### Animation & VFX
 
-- **`SineWaveTextAnimation`** — after the refactor above, an `AnimationCurve` field could replace the linear `Mathf.Sin` for non-uniform easing without any runtime cost increase, giving artists full control over the wave shape.
+- **`TMP_CurvedText`** ✅ — replaced `SineWaveTextAnimation` entirely. The new component resolves all three original issues (per-frame allocation, full mesh re-upload, non-configurable parameters) and provides a richer artist-facing interface out of the box.
 - **Particle systems** — `ParticleMat_Sparkles` and `ParticleMat_Stars` should have **GPU Instancing** enabled on their materials. Sorting Layer assignments should be verified to avoid overdraw conflicts with the background shader at render time.
 
 ---
@@ -603,9 +607,9 @@ public class SineWaveTextAnimation : MonoBehaviour
 | **P0** | Repository ships ~1 GB of generated files; Windows extraction fails with path-too-long error | Submission / Delivery |
 | ~~**P0**~~ ✅ | ~~`BottomBarView.cs` entirely absent — contracted API not delivered~~ **Fixed** — `MenuFooterController.cs` renamed to `BottomBarView.cs`, `ContentActivated` / `Closed` events added, plus snap/accordion polish, missing `UnselectedTransition` Animator state, and extended click area (see §2.5) | Specification |
 | **P0** | Settings Popup: no extensible base popup architecture, no blur/overlay system | Specification |
-| **P1** | Background image distorts on non-reference-resolution devices | UI / Visual |
+| ~~**P1**~~ ✅ | ~~Background image distorts on non-reference-resolution devices~~ **Fixed** — `AspectRatioFitter` (Envelope Parent) + Square POT + ASTC compression (see §2.1, §6) | UI / Visual |
 | **P1** | Single Canvas for all UI — no batching isolation | Architecture / Performance |
-| **P1** | `SineWaveTextAnimation`: per-frame heap allocations + non-configurable parameters | Code / Performance |
+| ~~**P1**~~ ✅ | ~~`SineWaveTextAnimation`: per-frame heap allocations + non-configurable parameters~~ **Fixed** — script removed, replaced with `TMP_CurvedText` (see §3.1, §5) | Code / Performance |
 | ~~**P1**~~ ✅ | ~~`MenuFooterController`: `DOMoveX` world-space bug on Canvas element~~ **Fixed** — async/await + `anchoredPosition`, DOTween removed (see §3.2) | Code / Bug |
 | ~~**P1**~~ ✅ | ~~`NavigationController`: synchronous scene loading causes main-thread freeze~~ **Fixed** — `LoadSceneAsync` + fade overlay (see §3.3) | Code |
 | **P2** | `CameraResolutionCheck`: division by zero when `Screen.dpi == 0` | Code / Bug |
