@@ -107,7 +107,7 @@ This layout keeps all assets for a given screen in one place, limits nesting to 
 
 ### 1.3 Scene Hierarchy
 
-The `HomeScreen` scene places **every element — Header, Footer, Popups, Background, and all UI screens — inside a single Canvas**.
+The `HomeScreen` scene placed **every element — Header, Footer, Popups, Background, and all UI screens — inside a single Canvas**.
 
 ```
 Canvas
@@ -127,6 +127,26 @@ While Unity permits this, it is not a scalable practice for several reasons:
 - A single Canvas **re-batches its entire geometry** whenever any child's visual state changes. Splitting into multiple Canvases (static background, HUD, popup overlay) scopes re-batches and is the standard approach for production mobile UI.
 - With everything as children of one Canvas the hierarchy becomes difficult to navigate and reason about as content grows.
 - There is no **additive scene loading strategy**. Background, HUD, and overlay systems should ideally be independent scenes loaded additively, enabling content streaming and team parallelism.
+
+#### Applied Fix — Split into three sibling Canvases
+
+The single Canvas was split by render scope into three sibling Canvases at the scene root, each with its own `sortingOrder` so the layering is explicit instead of being implied by hierarchy depth:
+
+```
+HomeScreen.unity
+ ├── Canvas_Background   ← static, never re-batched after first draw
+ ├── Canvas_HUD          ← Header / Footer / persistent buttons
+ └── Canvas_Popup        ← SettingsPopup and any future modal layer (sortingOrder: 10)
+```
+
+What this buys:
+
+- **Scoped re-batching.** A state change in the footer (BottomBar indicator slide, accordion, button press animation) dirties only `Canvas_HUD`. The static background atlas is never re-uploaded after the first frame. Opening/closing a popup dirties only `Canvas_Popup`. Mobile GPU draw call count is roughly the same, but the CPU-side mesh rebuild cost is sliced into three independent budgets instead of one combined.
+- **Explicit z-ordering.** `sortingOrder = 10` on `Canvas_Popup` guarantees it draws above everything else regardless of where its prefab is parented or instantiated. The HUD doesn't have to play sibling-index games to stay above the background.
+- **Composable with `BlurBackground`.** The blur capture in `BlurBackground` can ignore `Canvas_Popup` cameras (when one is added) via the existing `ignoreCameraTag` field, so it only captures the world + HUD beneath, not the popup it's about to live inside.
+- **Reusable per screen.** `LevelCompletedScreen` can adopt the same split (or a subset) without dragging an inherited monolith from a shared prefab — see also the prefab decoupling discussion below.
+
+What's **not** addressed by this fix: additive scene loading. Background / HUD / overlay are still all in one scene file. That's a larger architectural move (loading screens via `LoadSceneMode.Additive`) and intentionally out of scope here.
 
 The `NoSafeArea` / `SafeArea` sibling pattern for separating background from content is valid, but relies on a verbatim copy of a community-authored script (see §3.7).
 
@@ -509,7 +529,7 @@ namespace Tripledot.Shared
 | Repository ships ~1 GB of generated files | Blocks cloning, wastes CI/CD storage | Submission / `.gitignore` |
 | Demo and template assets in build-eligible paths | Inflates build size, pollutes asset DB | `Assets/Settings/` (URP2DSceneTemplate), `TextMesh Pro/` (TMP demos) — DOTween fully removed ✅ |
 | Unused packages in `manifest.json` (`visualscripting`, `timeline`, `multiplayer.center`) | Medium — extra compilation targets, slower domain reload on every script change | `Packages/manifest.json` ✅ removed |
-| Single Canvas for all UI | Full re-batch on any UI state change | `HomeScreen.unity` hierarchy |
+| Single Canvas for all UI | ✅ **Fixed** — split into `Canvas_Background` / `Canvas_HUD` / `Canvas_Popup` sibling roots with explicit `sortingOrder`; re-batches are now scoped per Canvas (see §1.3) | `HomeScreen.unity` hierarchy |
 | `ForceMeshUpdate()` + `mesh.vertices` every frame | ✅ **Fixed** — `SineWaveTextAnimation.cs` removed, replaced with `TMP_CurvedText` (see §3.1, §5) | `LevelCompletedScreen` |
 | `Refresh()` polling in `Update()` | ✅ **Fixed** — portrait-only app, safe area read once in `Awake()`, `Update()` removed, 247 lines → 14 | `SafeArea.cs` (see §3.7) |
 | Synchronous `SceneManager.LoadScene` | ✅ **Fixed** — `LoadSceneAsync` + fade overlay + input block, `Time.unscaledDeltaTime` | `NavigationController.cs` (see §3.3) |
@@ -666,7 +686,7 @@ The principle: reach for Shader Graph when the effect genuinely requires procedu
 | ~~**P0**~~ ✅ | ~~`BottomBarView.cs` entirely absent — contracted API not delivered~~ **Fixed** — `MenuFooterController.cs` renamed to `BottomBarView.cs`, `ContentActivated` / `Closed` events added, plus snap/accordion polish, missing `UnselectedTransition` Animator state, and extended click area (see §2.5) | Specification |
 | **P0** ⚠ partial | Settings Popup: ~~no blur/overlay system~~ **blur/overlay** covered by reusable `BlurBackground` (`_Shared/`, Awaitable-based, DOTween removed). ~~no extensible base popup architecture~~ **base class** `PopupController` extracted (`_Shared/`); `SettingsPopupController` now inherits from it. **Prefab Variant chain still missing** (`SettingsPopup` should be a Variant of `GenericPopup`) — content-side restructure. See §2.4. | Specification |
 | ~~**P1**~~ ✅ | ~~Background image distorts on non-reference-resolution devices~~ **Fixed** — `AspectRatioFitter` (Envelope Parent) + Square POT + ASTC compression (see §2.1, §6) | UI / Visual |
-| **P1** | Single Canvas for all UI — no batching isolation | Architecture / Performance |
+| ~~**P1**~~ ✅ | ~~Single Canvas for all UI — no batching isolation~~ **Fixed** — `HomeScreen.unity` split into `Canvas_Background` / `Canvas_HUD` / `Canvas_Popup` siblings, re-batches scoped per Canvas (see §1.3) | Architecture / Performance |
 | ~~**P1**~~ ✅ | ~~`SineWaveTextAnimation`: per-frame heap allocations + non-configurable parameters~~ **Fixed** — script removed, replaced with `TMP_CurvedText` (see §3.1, §5) | Code / Performance |
 | ~~**P1**~~ ✅ | ~~`MenuFooterController`: `DOMoveX` world-space bug on Canvas element~~ **Fixed** — async/await + `anchoredPosition`, DOTween removed (see §3.2) | Code / Bug |
 | ~~**P1**~~ ✅ | ~~`NavigationController`: synchronous scene loading causes main-thread freeze~~ **Fixed** — `LoadSceneAsync` + fade overlay (see §3.3) | Code |
