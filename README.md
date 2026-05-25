@@ -23,7 +23,8 @@ You’ll find the detailed notes in [`LEAD_TECH_REVIEW.md`](./LEAD_TECH_REVIEW.m
 
 **Code & Architecture.** The C# is readable and works on the happy path, but feels closer to adapted forum patterns than production code. The recurring issues: magic-string identifiers, hardcoded values that should be Inspector-driven, listeners added without cleanup, unguarded edge cases, and a dependency used only once are small in isolation, but tell together. In several places, view, animation, and selection responsibilities are also blurred.
 
-Cumulatively, this places the submission **at the junior–mid boundary**: a candidate who can deliver a working feature on the target device, but who has not yet absorbed the rigour, code-review discipline, and performance-aware instincts that a mid-level production role assumes.
+Overall, the impression is of a candidate working at the **lower end of mid-level**: clearly engaged with the brief, capable of producing a feature that runs on the target device, but not yet with the production-team reflexes that come from sustained code-review exposure. Most of the points above are learnable and largely contextual, and this looks like someone who would grow quickly inside a team that treats standards and review as a first-class part of the workflow.
+
 
 ---
 
@@ -114,5 +115,5 @@ The original diverges significantly from the PSD reference: no bevel, no drop sh
 
 **After:** style matched to PSD; glint and sparkle VFX not yet implemented
 
-<img width="811" alt="Screenshot 2026-05-25 180058" src="https://github.com/user-attachments/assets/d9f22859-9776-4d9f-b589-42950591c134" />
+<img width="811" alt="Screenshot 2026-05-25 180058" src="https://github.com/user-attachments/assets/c7c76e63-da75-46f5-87b8-ec9136d4be35" />
 
