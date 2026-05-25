@@ -337,6 +337,20 @@ public void LoadScene(string sceneName)
 - No `LoadSceneAsync` variant, no loading screen, no transition
 - Accepts a raw string with no validation — an invalid scene name fails silently at runtime with no feedback
 
+#### Applied Fix — Async load with fade overlay
+
+Replaced with `LoadSceneAsync` + `allowSceneActivation = false` so the heavy single-frame activation work is hidden behind a fade. A full-screen `Image` overlay blocks input for the entire transition; the incoming scene authors its overlay at alpha 1 and fades out on `Start()`, giving a seamless cut between screens.
+
+| | Before | After |
+|---|---|---|
+| **Load method** | `SceneManager.LoadScene` — blocks main thread | `LoadSceneAsync` + `allowSceneActivation = false` |
+| **Transition** | hard cut | fade-out → activate → fade-in |
+| **Input during load** | unblocked | `raycastTarget = true` on overlay for entire duration |
+| **Time source** | — | `Time.unscaledDeltaTime` — works correctly if timescale is 0 |
+| **Cancellation** | — | `destroyCancellationToken` — safe on GO destroy |
+
+**Applied Fix.** `SceneManager.LoadScene` is not wrong in itself, but the HomeScreen → LevelCompletedScreen transition wasn't smooth: replaced with `LoadSceneAsync` + `allowSceneActivation=false` gated behind a per-scene `FadeOverlay` (`Image.color.a`, raycast-blocking), so the freeze is hidden behind a fade-to-black.
+
 ---
 
 ### 3.4 `CameraResolutionCheck.cs` — Division by zero, magic enum values
@@ -457,7 +471,7 @@ namespace Tripledot.Shared
 | Single Canvas for all UI | Full re-batch on any UI state change | `HomeScreen.unity` hierarchy |
 | `ForceMeshUpdate()` + `mesh.vertices` every frame | High — 60 heap allocs/sec, full GPU upload per frame | `SineWaveTextAnimation.cs` |
 | `Refresh()` polling in `Update()` | ✅ **Fixed** — portrait-only app, safe area read once in `Awake()`, `Update()` removed, 247 lines → 14 | `SafeArea.cs` (see §3.7) |
-| Synchronous `SceneManager.LoadScene` | High — visible main thread freeze on every scene transition | `NavigationController.cs` |
+| Synchronous `SceneManager.LoadScene` | ✅ **Fixed** — `LoadSceneAsync` + fade overlay + input block, `Time.unscaledDeltaTime` | `NavigationController.cs` (see §3.3) |
 | Background image distorts on non-reference devices | Visual defect on all non-matching aspect ratios | `HomeScreen.unity` — `Background` |
 | `DOMoveX` world-space on Canvas element | ✅ **Fixed** — replaced with `anchoredPosition` + `Awaitable`, DOTween (~10 MB) removed | `MenuFooterController.cs` (see §3.2) |
 
@@ -593,7 +607,7 @@ public class SineWaveTextAnimation : MonoBehaviour
 | **P1** | Single Canvas for all UI — no batching isolation | Architecture / Performance |
 | **P1** | `SineWaveTextAnimation`: per-frame heap allocations + non-configurable parameters | Code / Performance |
 | ~~**P1**~~ ✅ | ~~`MenuFooterController`: `DOMoveX` world-space bug on Canvas element~~ **Fixed** — async/await + `anchoredPosition`, DOTween removed (see §3.2) | Code / Bug |
-| **P1** | `NavigationController`: synchronous scene loading causes main-thread freeze | Code |
+| ~~**P1**~~ ✅ | ~~`NavigationController`: synchronous scene loading causes main-thread freeze~~ **Fixed** — `LoadSceneAsync` + fade overlay (see §3.3) | Code |
 | **P2** | `CameraResolutionCheck`: division by zero when `Screen.dpi == 0` | Code / Bug |
 | **P2** | No C# namespace on any custom script | Architecture |
 | **P2** | No localisation infrastructure — direct specification miss | Specification |
