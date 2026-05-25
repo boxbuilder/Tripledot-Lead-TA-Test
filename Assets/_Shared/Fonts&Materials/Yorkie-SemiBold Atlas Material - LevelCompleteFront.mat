@@ -51,17 +51,17 @@ Material:
     - _AdditionalUnderlayOffsetY: 0
     - _AdditionalUnderlaySoftness: 0
     - _Ambient: 1
-    - _Bevel: 0.88
+    - _Bevel: 0.9
     - _BevelClamp: 0
-    - _BevelOffset: -0.051
+    - _BevelOffset: -0.027
     - _BevelRoundness: 0
-    - _BevelWidth: -0.037
+    - _BevelWidth: -0.05
     - _BumpFace: 0
     - _BumpOutline: 0
     - _ColorMask: 15
     - _CullMode: 0
     - _Diffuse: 0
-    - _FaceDilate: -0.035
+    - _FaceDilate: -0.04
     - _FaceUVSpeedX: 0
     - _FaceUVSpeedY: 0
     - _GlowInner: 0
@@ -75,12 +75,12 @@ Material:
     - _OutlineSoftness: 0
     - _OutlineUVSpeedX: 0
     - _OutlineUVSpeedY: 0
-    - _OutlineWidth: 0.12
+    - _OutlineWidth: 0.068
     - _PerspectiveFilter: 0.875
     - _Reflectivity: 15
     - _ScaleRatioA: 0.9
-    - _ScaleRatioB: 0.76275
-    - _ScaleRatioC: 0.52968746
+    - _ScaleRatioB: 0.76725
+    - _ScaleRatioC: 0.5328125
     - _ScaleRatioD: 1
     - _ScaleX: 1
     - _ScaleY: 1

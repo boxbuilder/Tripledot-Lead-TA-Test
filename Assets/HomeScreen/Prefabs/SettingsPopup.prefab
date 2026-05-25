@@ -1398,6 +1398,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 7752957023023848245, guid: dc6d0589d74031d4a987127d625e61d7, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 9196434923795759048, guid: dc6d0589d74031d4a987127d625e61d7, type: 3}
       propertyPath: m_text
       value: 'Settings
@@ -1405,7 +1409,8 @@ PrefabInstance:
 '
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 7752957023023848245, guid: dc6d0589d74031d4a987127d625e61d7, type: 3}
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 8971187710638563199, guid: dc6d0589d74031d4a987127d625e61d7, type: 3}
       insertIndex: -1

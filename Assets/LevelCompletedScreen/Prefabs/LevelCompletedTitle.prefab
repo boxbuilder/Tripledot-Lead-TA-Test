@@ -34,8 +34,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -1.25}
-  m_SizeDelta: {x: 200, y: -2.5000057}
+  m_AnchoredPosition: {x: 0, y: -2.2500134}
+  m_SizeDelta: {x: 200, y: -0.5000268}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5763021285644328928
 CanvasRenderer:
@@ -76,8 +76,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4278190163
-  m_fontColor: {r: 0.3254902, g: 0, b: 0, a: 1}
+    rgba: 4280843262
+  m_fontColor: {r: 0.9960785, g: 0.48235297, b: 0.15686275, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -94,7 +94,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 98.75
+  m_fontSize: 99.75
   m_fontSizeBase: 180
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -143,30 +143,21 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0
-      inSlope: 8.410941
-      outSlope: 8.410941
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0.042764124
-    - serializedVersion: 3
-      time: 0.4983368
-      value: 2
+      value: 1
       inSlope: 0
       outSlope: 0
-      tangentMode: 0
+      tangentMode: 34
       weightedMode: 0
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
       time: 1
-      value: 0
-      inSlope: -9.070126
-      outSlope: -9.070126
-      tangentMode: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 34
       weightedMode: 0
-      inWeight: 0.043125227
+      inWeight: 0
       outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
@@ -180,26 +171,26 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 0.0006239172
       value: 0.0038490295
-      inSlope: 4.120426
-      outSlope: 4.120426
+      inSlope: -0.09810602
+      outSlope: -0.09810602
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
-      outWeight: 0.020992393
+      outWeight: 0.040076364
     - serializedVersion: 3
       time: 1.0003662
       value: 1.0042114
-      inSlope: -0.09193185
-      outSlope: -0.09193185
+      inSlope: 17.762238
+      outSlope: 17.762238
       tangentMode: 0
       weightedMode: 1
-      inWeight: 0.694793
+      inWeight: 0.024809198
       outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  animDurationInSeconds: 0.2
-  offsetDelayInSeconds: 0.05
+  animDurationInSeconds: 0.3
+  offsetDelayInSeconds: 0.06
 --- !u!1 &1970307970820578172
 GameObject:
   m_ObjectHideFlags: 0
@@ -343,30 +334,21 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0
-      inSlope: 8.410941
-      outSlope: 8.410941
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0.042764124
-    - serializedVersion: 3
-      time: 0.4983368
-      value: 2
+      value: 1
       inSlope: 0
       outSlope: 0
-      tangentMode: 0
+      tangentMode: 34
       weightedMode: 0
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
       time: 1
-      value: 0
-      inSlope: -9.070126
-      outSlope: -9.070126
-      tangentMode: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 34
       weightedMode: 0
-      inWeight: 0.043125227
+      inWeight: 0
       outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
