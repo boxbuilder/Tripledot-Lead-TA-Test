@@ -37,8 +37,32 @@ PrefabInstance:
       value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 4123930810605440263, guid: 93c2890d218ee9d4ea03e1fc5625bf94, type: 3}
+      propertyPath: ColorModule.gradient.maxGradient.atime1
+      value: 2313
+      objectReference: {fileID: 0}
+    - target: {fileID: 4123930810605440263, guid: 93c2890d218ee9d4ea03e1fc5625bf94, type: 3}
+      propertyPath: ColorModule.gradient.maxGradient.atime2
+      value: 50501
+      objectReference: {fileID: 0}
+    - target: {fileID: 4123930810605440263, guid: 93c2890d218ee9d4ea03e1fc5625bf94, type: 3}
+      propertyPath: SizeModule.curve.maxCurve.m_Curve.Array.data[1].value
+      value: 0.704797
+      objectReference: {fileID: 0}
+    - target: {fileID: 4123930810605440263, guid: 93c2890d218ee9d4ea03e1fc5625bf94, type: 3}
       propertyPath: EmissionModule.m_Bursts.Array.data[0].countCurve.scalar
       value: 40
+      objectReference: {fileID: 0}
+    - target: {fileID: 4123930810605440263, guid: 93c2890d218ee9d4ea03e1fc5625bf94, type: 3}
+      propertyPath: SizeModule.curve.maxCurve.m_Curve.Array.data[1].inSlope
+      value: -0.9446492
+      objectReference: {fileID: 0}
+    - target: {fileID: 4123930810605440263, guid: 93c2890d218ee9d4ea03e1fc5625bf94, type: 3}
+      propertyPath: SizeModule.curve.maxCurve.m_Curve.Array.data[1].inWeight
+      value: 0.12500006
+      objectReference: {fileID: 0}
+    - target: {fileID: 4123930810605440263, guid: 93c2890d218ee9d4ea03e1fc5625bf94, type: 3}
+      propertyPath: SizeModule.curve.maxCurve.m_Curve.Array.data[1].outSlope
+      value: -0.9446492
       objectReference: {fileID: 0}
     - target: {fileID: 6153677519051194016, guid: 93c2890d218ee9d4ea03e1fc5625bf94, type: 3}
       propertyPath: m_LocalScale.x
@@ -62,7 +86,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6153677519051194016, guid: 93c2890d218ee9d4ea03e1fc5625bf94, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -21666.768
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6153677519051194016, guid: 93c2890d218ee9d4ea03e1fc5625bf94, type: 3}
       propertyPath: m_LocalRotation.w
@@ -94,7 +118,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6599645328489502177, guid: 93c2890d218ee9d4ea03e1fc5625bf94, type: 3}
       propertyPath: m_Name
-      value: StarBurst_Big Variant
+      value: StarBurst_Big
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

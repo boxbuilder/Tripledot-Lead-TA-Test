@@ -12,7 +12,7 @@
 3. [UI & Design System Review](#2-ui--design-system-review)
 4. [Code & Architecture Audit](#3-code--architecture-audit)
 5. [Performance](#4-performance)
-6. [Deep-Dive Refactor — `SineWaveTextAnimation.cs`](#5-deep-dive-refactor--sinewavtextanimationcs)
+6. [Deep-Dive Analysis — `SineWaveTextAnimation.cs` → replaced by `TMP_CurvedText`](#5-deep-dive-analysis--sinewavtextanimationcs--replaced-by-tmp_curvedtext)
 7. [Visual & Artistic Polish](#6-visual--artistic-polish)
 8. [Priority Matrix](#priority-matrix)
 
@@ -96,7 +96,7 @@ Assets/
  ├── LevelCompletedScreen/
  │    ├── Animations/   — MainReward animation clips and controller
  │    ├── Prefabs/      — reward elements, title, buttons
- │    ├── Scripts/      — SineWaveTextAnimation
+ │    ├── Scripts/      — TMP_CurvedText
  │    └── Sprites/      — screen-specific sprites
  ├── Scenes/
  ├── RenderPipeline/    — UniversalRP.asset, Renderer2D.asset, GlobalSettings, VolumeProfile
@@ -184,12 +184,63 @@ The brief requires:
 - There is **no blur implementation**, no overlay dimmer layer
 - No future popup can reuse anything from the current setup
 
+#### Applied Fix — Reusable `BlurBackground` component (partial)
+
+The "background darkening and blurring in a scalable way" half of the brief is now covered by `_Shared/Scripts/BlurBackground.cs`, a self-contained component that any popup can drop in as a child:
+
+- **Lifecycle.** Capture + fade-in happen on `OnEnable`; fade-out via `await blurBg.HideAsync()` before the popup deactivates itself. The popup controller owns the timing; the blur owns the capture/blur/fade pipeline.
+- **Capture pipeline.** Renders every enabled camera (minus an optional ignore-tag for overlay UI cameras) into a `RenderTexture`, downsamples to a configurable working size, then ping-pongs N blit passes through a temp buffer to apply the blur. Quality selectable: `Fast` / `Normal` / `Best` (1/2/3 passes).
+- **Recapture on re-open.** Each `OnEnable` discards the previous textures and grabs a fresh frame — the world behind a popup may have changed between openings.
+- **Resource hygiene.** `OnDisable` and `OnDestroy` release the temporary `RenderTexture`s; the cancellation token is linked to `destroyCancellationToken` so any in-flight fade aborts cleanly when the GameObject dies.
+- **Zero DOTween.** Implemented with Unity 6 `Awaitable` (same `FadeAsync` shape as `BottomBarView`, `NavigationController`, `TMP_CurvedText`). The original component ported from a prior project used `DG.Tweening.DOFade` — removed alongside the rest of the DOTween dependency.
+- **Composable.** A popup just adds it as a child with a `RawImage` + a blit material; no inheritance, no glue code. Any future popup gets the effect by composition rather than by inheriting from a base.
+
+#### Applied Fix — `PopupController` base class (minimal)
+
+The inheritance side of the brief is now satisfied at the script level: the close-animation / deactivate boilerplate that lived inside `SettingsPopupController` was extracted into `_Shared/Scripts/PopupController.cs`. Any feature-specific popup just inherits and gets the close lifecycle for free.
+
+```csharp
+// _Shared/Scripts/PopupController.cs
+public class PopupController : MonoBehaviour
+{
+    private static readonly int Close = Animator.StringToHash("Close");
+    [SerializeField] protected Animator animator;
+
+    public virtual void OnCloseButtonClicked()      => animator?.SetTrigger(Close);
+    public virtual void OnClosedAnimationCompleted() => gameObject.SetActive(false);   // Animation Event hook
+}
+
+// HomeScreen/Scripts/SettingsPopupController.cs
+public class SettingsPopupController : PopupController { }    // Settings-specific state lands here later.
+```
+
+- **Methods are `public virtual`** so a subclass can override the close flow (e.g. confirm dialog before closing, or async cleanup).
+- **`animator` is `protected`** so subclasses can drive it directly when they need to fire other triggers (Open, Shake, etc.).
+- **`SettingsPopupController.cs` kept at its original path with its original GUID** so the existing prefab's `m_Script` reference resolves without needing a manual rebind — the class is now just an empty subclass.
+- **Magic-string trigger.** The `Animator.StringToHash("Close")` is moved into the base but kept literal for now — see §3.6, that nit applies to the new home unchanged. A `[SerializeField] string closeTrigger = "Close"` would be a follow-up if needed.
+
+**Still TBD:** the Prefab Variant chain. `SettingsPopup.prefab` is still a parallel prefab to `GenericPopup.prefab` instead of a Variant of it. That's a content-side restructure that requires re-authoring the prefab hierarchy in the Editor and is out of scope for a code-only pass.
+
 ### 2.5 Bottom Bar — Missing Event Contract
 
 The brief specifies:
 > *"Create a BottomBarView.cs script to: Fire 'ContentActivated' when a button toggles on its content. Fire 'Closed' when no content is toggled."*
 
 This script does not exist. The delivered `MenuFooterController.cs` handles selection state internally but exposes neither of the required events. Any system that needs to react to footer navigation (content panel manager, analytics, tutorial system) has no contract to bind to.
+
+#### Applied Fix — Renamed to `BottomBarView`, events added, polish pass
+
+The delivered `MenuFooterController.cs` was renamed (file + class + `.meta` preserved so the prefab reference survives) to `BottomBarView.cs` to match the brief's contract. Two `UnityEvent`s were exposed:
+
+- `ContentActivated : UnityEvent<ButtonFooterController>` — fires when a footer button is toggled on, passing the activated button so listeners can route to the correct content panel.
+- `Closed : UnityEvent` — fires when the currently-selected button is toggled off and no content is active.
+
+Behavioural polish added alongside the rename:
+
+- **Snap on first selection** — when no button was previously selected (e.g. on `Start()` with `startSelected` set, or after a deselect), the indicator is placed immediately on the new button instead of sliding from its previous position. Slide is preserved when switching between two already-active selections.
+- **Accordion expansion** — selecting a button reallocates horizontal space via `LayoutElement.flexibleWidth` (driven by the existing `HorizontalLayoutGroup`), animated in lockstep with the indicator. The selected cell grows, the others compress proportionally — a subtle "fisarmonica" effect.
+- **Missing `UnselectedTransition` animation state added** — the original `ButtonFooter` Animator had no state covering the return from `Selected` to default, so a deselected button stayed visually stuck in the selected pose. The transition state was authored and wired in the controller.
+- **Extended clickable area** — the button's hit-box was expanded beyond the sprite border via an invisible raycast target, so the user no longer has to land precisely on the icon. Important for thumb-reach ergonomics on mobile and matches the in-house feel of the reference gif.
 
 ### 2.6 Animation Polish
 
@@ -199,7 +250,7 @@ The footer entrance/exit animations and the Level Completed screen animations ar
 
 ## 3. Code & Architecture Audit
 
-### 3.1 `SineWaveTextAnimation.cs` — Critical performance issue
+### 3.1 `SineWaveTextAnimation.cs` — Critical performance issue ✅ Replaced by `TMP_CurvedText`
 
 ```csharp
 // DELIVERED — problematic
@@ -224,11 +275,13 @@ void Update()
 - All three animation parameters are `const` — no artist can adjust them from the Inspector or override them per Prefab
 - The correct pattern uses `TMP_TextInfo` to write directly into TMP's owned vertex buffers and then calls `UpdateGeometry()` — zero allocation, no full mesh re-upload, handles invisible characters correctly
 
-See §5 for the full before/after refactor.
+See §5 for the full before/after analysis.
+
+**Applied Resolution:** `SineWaveTextAnimation.cs` was removed entirely and replaced with `TMP_CurvedText`, a more advanced and performant text animation component. All three issues (per-frame allocation, full mesh re-upload, non-configurable parameters) are resolved at source.
 
 ---
 
-### 3.2 `MenuFooterController.cs` — World-space DOTween on a UI element
+### 3.2 `MenuFooterController.cs` (now `BottomBarView.cs`) — World-space DOTween on a UI element
 
 ```csharp
 // BUG — DOMoveX operates in world space
@@ -306,6 +359,8 @@ private async void MoveIndicator()
 | **Namespace** | global | `Tripledot.HomeScreen` |
 | **External dependency** | DOTween (~10 MB) | none |
 
+The script was subsequently renamed to `BottomBarView` and given the `ContentActivated` / `Closed` events plus snap-on-first-selection + accordion polish — see §2.5.
+
 ---
 
 ### 3.3 `NavigationController.cs` — Synchronous scene loading
@@ -320,6 +375,20 @@ public void LoadScene(string sceneName)
 - `SceneManager.LoadScene` is synchronous and **blocks the main thread** for the duration of the load — causes a visible freeze on mobile
 - No `LoadSceneAsync` variant, no loading screen, no transition
 - Accepts a raw string with no validation — an invalid scene name fails silently at runtime with no feedback
+
+#### Applied Fix — Async load with fade overlay
+
+Replaced with `LoadSceneAsync` + `allowSceneActivation = false` so the heavy single-frame activation work is hidden behind a fade. A full-screen `Image` overlay blocks input for the entire transition; the incoming scene authors its overlay at alpha 1 and fades out on `Start()`, giving a seamless cut between screens.
+
+| | Before | After |
+|---|---|---|
+| **Load method** | `SceneManager.LoadScene` — blocks main thread | `LoadSceneAsync` + `allowSceneActivation = false` |
+| **Transition** | hard cut | fade-out → activate → fade-in |
+| **Input during load** | unblocked | `raycastTarget = true` on overlay for entire duration |
+| **Time source** | — | `Time.unscaledDeltaTime` — works correctly if timescale is 0 |
+| **Cancellation** | — | `destroyCancellationToken` — safe on GO destroy |
+
+**Applied Fix.** `SceneManager.LoadScene` is not wrong in itself, but the HomeScreen → LevelCompletedScreen transition wasn't smooth: replaced with `LoadSceneAsync` + `allowSceneActivation=false` gated behind a per-scene `FadeOverlay` (`Image.color.a`, raycast-blocking), so the freeze is hidden behind a fade-to-black.
 
 ---
 
@@ -371,6 +440,8 @@ animator.SetTrigger("Close");  // typo-prone, refactor-unsafe
 - No `Animator.StringToHash` cache, no static constant
 - Renaming the Animator parameter breaks this silently at runtime
 - No null check on `animator`
+
+**Partially addressed.** The script's logic was lifted into `PopupController` (see §2.4). On the way, the `Animator.StringToHash("Close")` cache was kept (no more per-call string lookup) and a null guard was added around `animator.SetTrigger(...)`. What is *still* magic-string is the literal `"Close"` — if an artist renames the Animator trigger, the code breaks silently. A `[SerializeField] string closeTrigger = "Close"` would close that gap; left as a follow-up to keep the refactor minimal.
 
 ---
 
@@ -439,17 +510,19 @@ namespace Tripledot.Shared
 | Demo and template assets in build-eligible paths | Inflates build size, pollutes asset DB | `Assets/Settings/` (URP2DSceneTemplate), `TextMesh Pro/` (TMP demos) — DOTween fully removed ✅ |
 | Unused packages in `manifest.json` (`visualscripting`, `timeline`, `multiplayer.center`) | Medium — extra compilation targets, slower domain reload on every script change | `Packages/manifest.json` ✅ removed |
 | Single Canvas for all UI | Full re-batch on any UI state change | `HomeScreen.unity` hierarchy |
-| `ForceMeshUpdate()` + `mesh.vertices` every frame | High — 60 heap allocs/sec, full GPU upload per frame | `SineWaveTextAnimation.cs` |
+| `ForceMeshUpdate()` + `mesh.vertices` every frame | ✅ **Fixed** — `SineWaveTextAnimation.cs` removed, replaced with `TMP_CurvedText` (see §3.1, §5) | `LevelCompletedScreen` |
 | `Refresh()` polling in `Update()` | ✅ **Fixed** — portrait-only app, safe area read once in `Awake()`, `Update()` removed, 247 lines → 14 | `SafeArea.cs` (see §3.7) |
-| Synchronous `SceneManager.LoadScene` | High — visible main thread freeze on every scene transition | `NavigationController.cs` |
-| Background image distorts on non-reference devices | Visual defect on all non-matching aspect ratios | `HomeScreen.unity` — `Background` |
+| Synchronous `SceneManager.LoadScene` | ✅ **Fixed** — `LoadSceneAsync` + fade overlay + input block, `Time.unscaledDeltaTime` | `NavigationController.cs` (see §3.3) |
+| Background image distorts on non-reference devices | ✅ **Fixed** — `AspectRatioFitter` (Envelope Parent) + Square POT + ASTC compression | `HomeScreen.unity` — `Background` (see §2.1, §6) |
 | `DOMoveX` world-space on Canvas element | ✅ **Fixed** — replaced with `anchoredPosition` + `Awaitable`, DOTween (~10 MB) removed | `MenuFooterController.cs` (see §3.2) |
 
 ---
 
-## 5. Deep-Dive Refactor — `SineWaveTextAnimation.cs`
+## 5. Deep-Dive Analysis — `SineWaveTextAnimation.cs` → replaced by `TMP_CurvedText`
 
-Selected because it combines a **critical per-frame performance issue** with a direct **artist-facing configurability problem**, and the fix demonstrates clear knowledge of TMP's intended geometry API.
+Selected because it combines a **critical per-frame performance issue** with a direct **artist-facing configurability problem**, and the analysis demonstrates clear knowledge of TMP's intended geometry API.
+
+> **Final resolution:** the script was removed entirely and replaced with `TMP_CurvedText`, a more advanced component that solves all three problems at source. The before/after refactor below documents what a correct in-place fix would have looked like.
 
 ### Before
 
@@ -554,14 +627,33 @@ public class SineWaveTextAnimation : MonoBehaviour
   - Disable `Generate Mip Maps` — a fullscreen 2D UI image is never sampled at reduced resolution, mips only waste memory
   - Combined with `AspectRatioFitter`, this fixes both the display side (no distortion) and the memory side (correct compression) of the same background issue
 
-### Shader Graph opportunities
+### Shader Graph — Issues and Performance Considerations
 
-- **`GlowRays.shadergraph`** — the ray rotation should expose a `_Speed` property rather than relying on a hardcoded `Time` node. Without an exposed property it cannot be driven from script or keyed in an Animation Clip.
-- **`ShinyStar.shadergraph`** — shimmer `Speed` and `Intensity` should be material properties so they can be animated during the Level Completed opening sequence, scaling up and then settling into an idle loop.
+A review of all three custom shaders reveals a pattern of **property ranges that do not match actual values**, hardcoded constants, and debug nodes left in production graphs.
+
+| Shader | Key Issues |
+|---|---|
+| `ShinyStar` | `Speed` and `CycleTime` default `2.0` on range `0–1` — slider clamps silently; `Rotation` default `154°` on range `0–1` — completely non-functional from Inspector; no `Intensity` control exposed |
+| `GlowRays` | `Rotation Speed A/B` defaults `20`/`30` on range `0–1`; `Number of Rays` exposed as float `0–1` instead of integer; `Color` defaults to `(0,0,0,0)`; scale factor `37.67` hardcoded with no label; **Preview nodes left in the graph** |
+| `BackgroundShader` | Tiling offset Y hardcoded at `-0.5`; gradient direction and scale not exposed; pattern tiling not artist-controllable; Alpha hardcoded to `1.0`; `PatternOpacity` default `0.1` makes the pattern nearly invisible |
+
+In all three cases the properties were added without verifying the Inspector UX — any artist opening a material sees sliders that are either broken or clamped to a fraction of the intended range.
+
+#### ⚠️ Broader concern — Shader Graph has a cost
+
+A recurring beginner mistake is treating Shader Graph as a zero-cost tool. Every node executes on the GPU per fragment, per frame. `GlowRays` runs Polar Coordinates, multiple Rotate nodes, Sine/Cosine and Saturate passes on every pixel of the overlay — on a mobile GPU this is a measurable ALU cost.
+
+**More performant alternatives for these specific effects:**
+
+- **Background gradient** — a static raster texture is free at runtime; a Shader Graph gradient recalculates every fragment every frame for no visual gain over a 64×64 PNG
+- **Shiny star shimmer / glow rays** — better handled as a **sprite animation with additive blending** on a pre-baked texture atlas; the GPU cost drops to a single texture sample + blend op
+- **Glow rays specifically** — a **Particle System** with a single additive ray sprite, rotation driven by the particle's angular velocity, is trivially cheap and gives artists direct control over spread, density, and lifecycle without touching shader code
+
+The principle: reach for Shader Graph when the effect genuinely requires procedural variation at runtime (e.g. a distortion field driven by gameplay data). For decorative loops with no dynamic input, a raster + animation approach is always cheaper and easier to iterate on.
 
 ### Animation & VFX
 
-- **`SineWaveTextAnimation`** — after the refactor above, an `AnimationCurve` field could replace the linear `Mathf.Sin` for non-uniform easing without any runtime cost increase, giving artists full control over the wave shape.
+- **`TMP_CurvedText`** ✅ — replaced `SineWaveTextAnimation` entirely. The new component resolves all three original issues (per-frame allocation, full mesh re-upload, non-configurable parameters) and provides a richer artist-facing interface out of the box.
 - **Particle systems** — `ParticleMat_Sparkles` and `ParticleMat_Stars` should have **GPU Instancing** enabled on their materials. Sorting Layer assignments should be verified to avoid overdraw conflicts with the background shader at render time.
 
 ---
@@ -571,18 +663,18 @@ public class SineWaveTextAnimation : MonoBehaviour
 | Priority | Issue | Category |
 |---|---|---|
 | **P0** | Repository ships ~1 GB of generated files; Windows extraction fails with path-too-long error | Submission / Delivery |
-| **P0** | `BottomBarView.cs` entirely absent — contracted API not delivered | Specification |
-| **P0** | Settings Popup: no extensible base popup architecture, no blur/overlay system | Specification |
-| **P1** | Background image distorts on non-reference-resolution devices | UI / Visual |
+| ~~**P0**~~ ✅ | ~~`BottomBarView.cs` entirely absent — contracted API not delivered~~ **Fixed** — `MenuFooterController.cs` renamed to `BottomBarView.cs`, `ContentActivated` / `Closed` events added, plus snap/accordion polish, missing `UnselectedTransition` Animator state, and extended click area (see §2.5) | Specification |
+| **P0** ⚠ partial | Settings Popup: ~~no blur/overlay system~~ **blur/overlay** covered by reusable `BlurBackground` (`_Shared/`, Awaitable-based, DOTween removed). ~~no extensible base popup architecture~~ **base class** `PopupController` extracted (`_Shared/`); `SettingsPopupController` now inherits from it. **Prefab Variant chain still missing** (`SettingsPopup` should be a Variant of `GenericPopup`) — content-side restructure. See §2.4. | Specification |
+| ~~**P1**~~ ✅ | ~~Background image distorts on non-reference-resolution devices~~ **Fixed** — `AspectRatioFitter` (Envelope Parent) + Square POT + ASTC compression (see §2.1, §6) | UI / Visual |
 | **P1** | Single Canvas for all UI — no batching isolation | Architecture / Performance |
-| **P1** | `SineWaveTextAnimation`: per-frame heap allocations + non-configurable parameters | Code / Performance |
+| ~~**P1**~~ ✅ | ~~`SineWaveTextAnimation`: per-frame heap allocations + non-configurable parameters~~ **Fixed** — script removed, replaced with `TMP_CurvedText` (see §3.1, §5) | Code / Performance |
 | ~~**P1**~~ ✅ | ~~`MenuFooterController`: `DOMoveX` world-space bug on Canvas element~~ **Fixed** — async/await + `anchoredPosition`, DOTween removed (see §3.2) | Code / Bug |
-| **P1** | `NavigationController`: synchronous scene loading causes main-thread freeze | Code |
+| ~~**P1**~~ ✅ | ~~`NavigationController`: synchronous scene loading causes main-thread freeze~~ **Fixed** — `LoadSceneAsync` + fade overlay (see §3.3) | Code |
 | **P2** | `CameraResolutionCheck`: division by zero when `Screen.dpi == 0` | Code / Bug |
 | **P2** | No C# namespace on any custom script | Architecture |
 | **P2** | No localisation infrastructure — direct specification miss | Specification |
 | **P2** | Template/demo assets in build path (`URP2DSceneTemplate`, TMP demos) + rename `Assets/Settings/` → `Assets/RenderPipeline/` — `Lit2DSceneTemplate` and DOTween examples already removed ✅ | Project Standards |
 | **P3** | `ButtonFooterController`: `onClick` listener never removed — potential memory leak | Code |
-| **P3** | Magic string Animator triggers in `SettingsPopupController` | Code |
+| **P3** ⚠ partial | Magic string Animator triggers in `SettingsPopupController` — the literal `"Close"` is now centralised in `PopupController` (see §2.4 / §3.6) with `StringToHash` cache + null guard, but is still a magic string. A serialized trigger name would close it fully. | Code |
 | **P3** | Inconsistent prefab naming (`currencyBox`, `SettingsButton1`) | Project Standards |
 | ~~**P3**~~ ✅ | ~~`SafeArea.cs`: polling `Refresh()` every frame + verbatim community script with no attribution~~ **Fixed** — rewritten from scratch, 247 lines → 14 (see §3.7) | Performance / Standards |

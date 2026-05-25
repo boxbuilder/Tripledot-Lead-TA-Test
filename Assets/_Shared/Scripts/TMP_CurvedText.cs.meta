@@ -1,0 +1,22 @@
+fileFormatVersion: 2
+guid: bf5733ef3bc105345946d21aee1c0074
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - m_Material: {fileID: 2100000, guid: 562ce0089be0d4d9086f9ddb0c5124a7, type: 2}
+  - m_fontAsset: {fileID: 11400000, guid: baf56aa53748e4bdfa549b32617d9247, type: 2}
+  - m_sharedMaterial: {instanceID: 0}
+  - m_fontMaterial: {instanceID: 0}
+  - m_fontColorGradientPreset: {fileID: 11400000, guid: 2cb49f2cbfcf541338070c94fb157670,
+      type: 2}
+  - m_spriteAsset: {instanceID: 0}
+  - m_StyleSheet: {instanceID: 0}
+  - m_linkedTextComponent: {instanceID: 0}
+  - parentLinkedComponent: {instanceID: 0}
+  - m_baseMaterial: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

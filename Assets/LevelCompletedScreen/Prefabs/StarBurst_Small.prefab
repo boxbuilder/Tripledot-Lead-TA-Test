@@ -26,7 +26,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6599645328489502177}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -1.4405663, y: -17, z: -21666.768}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -1054,12 +1054,12 @@ ParticleSystem:
           outWeight: 0.04123711
         - serializedVersion: 3
           time: 1
-          value: 0
-          inSlope: -2.725409
-          outSlope: -2.725409
+          value: 0.7675376
+          inSlope: -1.2429549
+          outSlope: -1.2429549
           tangentMode: 0
           weightedMode: 0
-          inWeight: 0.05060929
+          inWeight: 0.11280495
           outWeight: 0
         m_PreInfinity: 2
         m_PostInfinity: 2
@@ -1383,8 +1383,8 @@ ParticleSystem:
         ctime6: 0
         ctime7: 0
         atime0: 0
-        atime1: 9830
-        atime2: 31997
+        atime1: 3277
+        atime2: 37779
         atime3: 65535
         atime4: 65535
         atime5: 0
