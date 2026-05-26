@@ -10,6 +10,12 @@ Rather than rebuilding the project from scratch, I focused on **accurate diagnos
 
 Many of the issues I found (shader problems, text rendering, incorrect UI configurations) are documented in detail in [`LEAD_TECH_REVIEW.md`](./LEAD_TECH_REVIEW.md). Where possible, fixes were applied directly to the project rather than left as comments.
 
+The test took about two days of work, broken down as follows:
+
+**Day 1: General analysis, refactoring the structure, cleaning up unnecessary files, and project setup for delivery.**
+
+**Day 2: Rework of the graphical components, preparation of deliverables, and feedback generation.**
+
 ---
 
 ## Overall Assessment
@@ -113,7 +119,7 @@ The original diverges significantly from the PSD reference: no bevel, no drop sh
 
 <img width="811" alt="Screenshot 2026-05-25 173028" src="https://github.com/user-attachments/assets/5d8ab808-6a26-4c18-97ca-40df2ce3c7a9" />
 
-**After:** style matched to PSD; glint and sparkle VFX not yet implemented
+**After:** style matched to PSD; central gradient, glint, and sparkle VFX not yet implemented
 
 <img width="811" alt="Screenshot 2026-05-25 180058" src="https://github.com/user-attachments/assets/c7c76e63-da75-46f5-87b8-ec9136d4be35" />
 
